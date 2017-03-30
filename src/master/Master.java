@@ -1,25 +1,23 @@
 package master;
-import java.io.IOException;
+
+import java.io.*;
+import java.net.*;
 import java.util.LinkedHashMap;
-
 import org.json.*;
-
-import com.sun.beans.util.Cache;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import model.Directions;
+import model.Message;
+
 import java.util.Map;
 
 
 public class Master implements MasterImp{
 	
-	private static final Map<String, Object> cache = new LinkedHashMap<>();
+	private Directions ourDirections;
+	private static Map<String, Object> cache;
 
-	
 	public void initialize(){
-		
+		cache = new LinkedHashMap<>();
 	}
 	
 	public void waitForNewQueriesThread(){
@@ -39,7 +37,37 @@ public class Master implements MasterImp{
 	}
 	
 	public void ackToReducers(){
-		
+		Socket requestSocket = null;
+		ObjectOutputStream out = null;
+		ObjectInputStream in = null;
+		try {
+			
+			requestSocket = new Socket(InetAddress.getByName("127.0.0.1"), 4321);
+			
+			
+			out = new ObjectOutputStream(requestSocket.getOutputStream());
+			in = new ObjectInputStream(requestSocket.getInputStream());
+			
+			out.writeUTF("Hi");
+			out.flush();
+			
+			out.writeObject(new Message(101, ourDirections));
+			out.flush();
+
+		} catch (UnknownHostException unknownHost) {
+			System.err.println("You are trying to connect to an unknown host!");
+		} catch (IOException ioException) {
+			ioException.printStackTrace();
+		} finally {
+			try {
+				in.close();
+				out.close();
+				requestSocket.close();
+			} catch (IOException ioException) {
+				ioException.printStackTrace();
+			}
+		}
+
 	}
 	
 	public void collecDataFromReducers(){
@@ -70,7 +98,7 @@ public class Master implements MasterImp{
 	}
 	
 	public void sendResultsToClient(){
-		
+		System.out.println(ourDirections.toString());
 	}
 	
 	// HTTP GET request using OKHTTP
