@@ -3,11 +3,13 @@ package master;
 import java.io.*;
 import java.net.*;
 import java.util.LinkedHashMap;
-import org.json.*;
-import okhttp3.*;
+//import org.json.*;
+import javafx.concurrent.Worker;
+//import okhttp3.*;
+import workers.MapWorker;
 import model.Directions;
 import model.Message;
-
+import model.MyThread;
 import java.util.Map;
 
 
@@ -15,13 +17,16 @@ public class Master implements MasterImp{
 	
 	private Directions ourDirections;
 	private static Map<String, Object> cache;
+	private MapWorker myWorker;
 
 	public void initialize(){
 		cache = new LinkedHashMap<>();
 	}
 	
 	public void waitForNewQueriesThread(){
-		
+		MyThread mythread = new MyThread("Queries");
+		new Thread(mythread).start();
+		mythread.run();
 	}
 	
 	public Directions searchCache(String dir){
@@ -29,45 +34,19 @@ public class Master implements MasterImp{
 	}
 	
 	public void distributeToMappers(){
-		
+		/**
+		 * TODO: Fix myThread to open it again in all methods
+		 */
+		myWorker = new MapWorker();
+		myWorker.initialize();
 	}
 	
 	public void waitForMappers(){
-		
+		myWorker.notifyMaster();
 	}
 	
 	public void ackToReducers(){
-		Socket requestSocket = null;
-		ObjectOutputStream out = null;
-		ObjectInputStream in = null;
-		try {
-			
-			requestSocket = new Socket(InetAddress.getByName("127.0.0.1"), 4321);
-			
-			
-			out = new ObjectOutputStream(requestSocket.getOutputStream());
-			in = new ObjectInputStream(requestSocket.getInputStream());
-			
-			out.writeUTF("Hi");
-			out.flush();
-			
-			out.writeObject(new Message(101, ourDirections));
-			out.flush();
-
-		} catch (UnknownHostException unknownHost) {
-			System.err.println("You are trying to connect to an unknown host!");
-		} catch (IOException ioException) {
-			ioException.printStackTrace();
-		} finally {
-			try {
-				in.close();
-				out.close();
-				requestSocket.close();
-			} catch (IOException ioException) {
-				ioException.printStackTrace();
-			}
-		}
-
+		
 	}
 	
 	public void collecDataFromReducers(){
@@ -85,7 +64,7 @@ public class Master implements MasterImp{
 	
 	public boolean updateCache(String dir, Directions newDir){
 		if (!cache.containsKey(dir)){
-			cache.put(dir, new Directions(newDir));
+			cache.put(dir, newDir);
 			return true;
 		}
 		return false;
@@ -112,22 +91,24 @@ public class Master implements MasterImp{
 	}
 
 	private	String run(String url) throws IOException {
-		OkHttpClient client = new OkHttpClient();
+		return null;
+		/*OkHttpClient client = new OkHttpClient();
 		  Request request = new Request.Builder()
 		      .url(url)
 		      .build();
 		  try(Response response = client.newCall(request).execute()){
 			  return response.body().string();
-		  }		  
+		  }	*/	  
 	}
 	//TODO: Fix the way we deserialize the json file we get from google
 	private static String deserializeGooglejson(String str){
-		JSONObject object = new JSONObject(str);
-		/*
+		return null;
+		/*JSONObject object = new JSONObject(str);
+		
 		 * Reference to:
 		 * http://stackoverflow.com/questions/2591098/how-to-parse-json-in-java
-		 */
+		 
 		
-		return "";
+		return "";*/
 	}
 }
