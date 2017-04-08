@@ -29,8 +29,7 @@ public class ReduceWorker implements Worker, ReduceWorkerImp{
 	}
 
 	@Override
-	public void initialize() {
-		
+	public void initialize() {		
 		sendResults(reduce("", new Object()));
 		
 	}
