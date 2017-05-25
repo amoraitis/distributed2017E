@@ -101,6 +101,10 @@ public class Directions implements Serializable{
 		this.startlat = startlat;
 	}
 	
+	public String getForHashing() {
+		return this.getStartlat()+""+this.getStartlon()+""+this.getEndlat()+""+this.getStartlat();
+	}
+	
 	public boolean equals(Directions otherDirs){
 		return (this.getStartlat()==otherDirs.getStartlat())&&(this.getStartlon()==otherDirs.getStartlon())
 				&&(this.getEndlat()==otherDirs.getEndlat())&&(this.getEndlon()==otherDirs.getEndlon());

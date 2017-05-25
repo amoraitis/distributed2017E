@@ -1,7 +1,10 @@
 package master;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import model.*;
 import okhttp3.*;
@@ -150,9 +153,21 @@ public class Master extends Thread implements MasterImp{
 	
 	private void startClientForMapper() {
 		ObjectInputStream inputStream = null;
+		int port = 4232;
+		String worker1="172.16.2.22",worker2="172.16.2.14",worker3="172.16.2.13",workerForMap="";
+		if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker3+port))<0 
+				&& calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker2+port))>0){
+			workerForMap=worker3;
+		}else if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker2+port))<0 
+				&& calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker1+port))>0){
+					workerForMap=worker2;
+		}else if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker1+port))<0 
+				|| calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker3+port))>0){
+			workerForMap=worker1;
+		}
 		
         try {              
-            requestSocketForWorker = new Socket("192.168.1.87", 4232);
+            requestSocketForWorker = new Socket(workerForMap, port);
             workerOut = new ObjectOutputStream(requestSocketForWorker.getOutputStream());
             inputStream = new ObjectInputStream(requestSocketForWorker.getInputStream());
             workerOut.writeObject(askedDirections);
@@ -186,7 +201,7 @@ public class Master extends Thread implements MasterImp{
         ObjectInputStream inputStream = null;
         try {
               
-            requestSocket = new Socket("192.168.1.94", 4005);
+            requestSocket = new Socket("172.16.2.24", 4005);
             out= new ObjectOutputStream(requestSocket.getOutputStream());
             inputStream = new ObjectInputStream(requestSocket.getInputStream());
             out.writeObject(mappedDirections);
@@ -230,4 +245,32 @@ public class Master extends Thread implements MasterImp{
 				e.printStackTrace();
 			}              
     }
+
+	private String calculateHash(String latlngopport){
+        MessageDigest md = null;
+		try {
+			md = MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        md.update(latlngopport.getBytes());
+
+        byte byteData[] = md.digest();
+
+        //convert the byte to hex format method 1
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < byteData.length; i++) {
+         sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        //convert the byte to hex format method 2
+        StringBuffer hexString = new StringBuffer();
+    	for (int i=0;i<byteData.length;i++) {
+    		String hex=Integer.toHexString(0xff & byteData[i]);
+   	     	if(hex.length()==1) hexString.append('0');
+   	     	hexString.append(hex);
+    	}
+    	System.out.println("Hex format : " + hexString.toString());
+		return hexString.toString();
+	}
 }
