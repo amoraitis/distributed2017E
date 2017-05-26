@@ -154,20 +154,20 @@ public class Master extends Thread implements MasterImp{
 	private void startClientForMapper() {
 		ObjectInputStream inputStream = null;
 		int port = 4232;
-		String worker1="172.16.2.22",worker2="172.16.2.14",worker3="172.16.2.13",workerForMap="";
+		String worker1="172.16.1.57",worker2="172.16.2.14",worker3="172.16.2.13",workerForMap="";
 		if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker3+port))<0 
 				&& calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker2+port))>0){
 			workerForMap=worker3;
 		}else if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker2+port))<0 
 				&& calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker1+port))>0){
-					workerForMap=worker2;
+			workerForMap=worker2;
 		}else if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker1+port))<0 
 				|| calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker3+port))>0){
 			workerForMap=worker1;
 		}
 		
         try {              
-            requestSocketForWorker = new Socket(workerForMap, port);
+            requestSocketForWorker = new Socket(worker1, port);
             workerOut = new ObjectOutputStream(requestSocketForWorker.getOutputStream());
             inputStream = new ObjectInputStream(requestSocketForWorker.getInputStream());
             workerOut.writeObject(askedDirections);
@@ -201,7 +201,7 @@ public class Master extends Thread implements MasterImp{
         ObjectInputStream inputStream = null;
         try {
               
-            requestSocket = new Socket("172.16.2.24", 4005);
+            requestSocket = new Socket("172.16.1.56", 4005);
             out= new ObjectOutputStream(requestSocket.getOutputStream());
             inputStream = new ObjectInputStream(requestSocket.getInputStream());
             out.writeObject(mappedDirections);

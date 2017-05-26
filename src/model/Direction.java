@@ -11,12 +11,20 @@ import java.io.Serializable;
  *
  */
 public class Direction implements Serializable{
-	/**
-   * 
-   */
-  private static final long serialVersionUID = -4734384092116845509L;
-  private String distance, duration;
-	private double startLat,endLat,startLon,endLon;
+	
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4871766606666947778L;
+private String distance, duration,polyline_points;
+  public String getPolyline_points() {
+	return polyline_points;
+  }
+
+	public void setPolyline_points(String polyline_points) {
+		this.polyline_points = polyline_points;
+	}
+private double startLat,endLat,startLon,endLon;
 	
 	public Direction(JSONObject step){
 		deserializeStep(step);
@@ -29,6 +37,7 @@ public class Direction implements Serializable{
 		this.setStartLon(step.getJSONObject("start_location").getDouble("lng"));
 		this.setEndLat(step.getJSONObject("end_location").getDouble("lat"));
 		this.setEndLon(step.getJSONObject("end_location").getDouble("lng"));
+		this.setPolyline_points(step.getJSONObject("polyline").getString("points").toString());
 
 	}	
 	
@@ -104,4 +113,5 @@ public class Direction implements Serializable{
 	public void setEndLon(double endLon) {
 		this.endLon = endLon;
 	}
+	
 }
