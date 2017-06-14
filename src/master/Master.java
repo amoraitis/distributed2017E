@@ -1,14 +1,12 @@
 package master;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import model.*;
 import okhttp3.*;
-import workers.*;
 
 public class Master extends Thread implements MasterImp{
 	private boolean goneTOApi=false;

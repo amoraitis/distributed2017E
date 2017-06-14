@@ -27,6 +27,7 @@ public class ActionsForMappers extends Thread{
     	return this.mappedDirections;
     }
      
+    @SuppressWarnings("unchecked")
     public void run() {
  
         try {
@@ -37,7 +38,6 @@ public class ActionsForMappers extends Thread{
                 out.flush();
             	this.mappedDirections =((Map<Integer, Directions>)in.readObject());
             	System.out.println(mappedDirections.get(0).toString());
-            	
             }catch(ClassNotFoundException classnot){            
                  
                 System.err.println("Data received in unknown format!");

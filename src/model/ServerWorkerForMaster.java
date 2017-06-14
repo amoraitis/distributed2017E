@@ -1,11 +1,8 @@
 package model;
 
-import java.awt.font.TextAttribute;
 import java.io.*;
 import java.net.Socket;
 import java.util.Map;
-
-import org.apache.commons.lang.ObjectUtils.Null;
 
 public class ServerWorkerForMaster extends Thread{
 	ObjectInputStream in;

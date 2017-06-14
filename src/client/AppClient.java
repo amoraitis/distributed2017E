@@ -3,11 +3,8 @@ package client;
 import java.io.File;
 import java.net.*;
 import java.nio.file.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.Map;
-
 import master.Master;
 import queryres.CreateQuery;
 import workers.*;
