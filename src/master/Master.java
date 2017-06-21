@@ -7,9 +7,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import model.*;
 import okhttp3.*;
+import workers.*;
 
 public class Master extends Thread implements MasterImp{
-	private boolean goneTOApi=false;
+	private static boolean goneTOApi=false, goneTOWorker=false;
 	private ObjectOutputStream workerOut=null;
 	private ServerSocket providerSocket = null;
     private Socket connection, requestSocketForWorker = null;
@@ -28,12 +29,13 @@ public class Master extends Thread implements MasterImp{
 			askedDirections = ((ServerMasterforClient) serverMasterforClient).getAskedDirections();
 			ourDirections = searchCache(askedDirections);
 			if(ourDirections==null){
-				/*MapWorker mapWorker = new MapWorker();
+				MapWorker mapWorker = new MapWorker();
 				mappedDirections = mapWorker.map();
 				ReduceWorker reduceWorker=new ReduceWorker(mappedDirections, askedDirections);
-				ourDirections= reduceWorker.reduce(mappedDirections);*/
-				startClientForMapper();
-				startClientforReducer(mappedDirections);
+				ourDirections= reduceWorker.reduce(mappedDirections);
+				/*startClientForMapper();
+				startClientforReducer(mappedDirections);*/
+				goneTOWorker = true;
 			}
 			
 			if(ourDirections==null){				
@@ -41,11 +43,13 @@ public class Master extends Thread implements MasterImp{
 					askedDirections.getEndlat(),askedDirections.getEndlon());
 				goneTOApi=true;
 			}
-			updateCache(ourDirections);
-			distributeToMappers();
-			System.out.println(ourDirections.toString());
 			sendResultsToClient();
-			askedDirections = null; ourDirections = null;
+			updateCache(ourDirections);
+			if(goneTOWorker)
+				//distributeToMappers();
+			System.out.println(ourDirections.toString());
+			System.out.println();
+			askedDirections = null; ourDirections = null; goneTOApi=false; goneTOWorker=false;
 		}		
 	}
 	
@@ -72,11 +76,11 @@ public class Master extends Thread implements MasterImp{
 			sendFromAPItoWorker(ourDirections);
 			return;
 		}
-		sendFromAPItoWorker(null);
+		Directions nonDirs=new Directions(0, 0, 0, 0);
+		sendFromAPItoWorker(nonDirs);
 	}
 	
 	public void waitForMappers(){
-		//startClientForMapper(ourDirections);//prosoxi sto object: ourDirections
 	}
 	
 	public void ackToReducers(){
@@ -152,8 +156,8 @@ public class Master extends Thread implements MasterImp{
 	private void startClientForMapper() {
 		ObjectInputStream inputStream = null;
 		int port = 4232;
-		String worker1="172.16.1.57",worker2="172.16.2.14",worker3="172.16.2.13",workerForMap="";
-		if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker3+port))<0 
+		String worker1="192.168.1.87",worker2="172.16.2.14",worker3="172.16.2.13",workerForMap="";
+		/*if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker3+port))<0 
 				&& calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker2+port))>0){
 			workerForMap=worker3;
 		}else if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker2+port))<0 
@@ -162,7 +166,7 @@ public class Master extends Thread implements MasterImp{
 		}else if(calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker1+port))<0 
 				|| calculateHash(askedDirections.getForHashing()).compareTo(calculateHash(worker3+port))>0){
 			workerForMap=worker1;
-		}
+		}*/
 		
         try {              
             requestSocketForWorker = new Socket(worker1, port);
@@ -183,7 +187,7 @@ public class Master extends Thread implements MasterImp{
 		  workerOut.writeObject(ourDirections);
 	      workerOut.flush();
 	    } catch (IOException e) {
-	    	e.printStackTrace();
+	    	System.err.println("Cannot write ourDirections!");
 	    }finally {
             try {
                 requestSocketForWorker.close();                
@@ -199,7 +203,7 @@ public class Master extends Thread implements MasterImp{
         ObjectInputStream inputStream = null;
         try {
               
-            requestSocket = new Socket("172.16.1.56", 4005);
+            requestSocket = new Socket("192.168.1.94", 4005);
             out= new ObjectOutputStream(requestSocket.getOutputStream());
             inputStream = new ObjectInputStream(requestSocket.getInputStream());
             out.writeObject(mappedDirections);

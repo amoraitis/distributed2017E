@@ -30,9 +30,13 @@ public class ServerReducerForMaster extends Thread{
 	public void setMappedDirections(Map<Integer, Directions> mappedDirections){
 		this.mappedDirections=mappedDirections;
 	}
-	 
+	
 	@Override
-	public void run() {	
+	public void run() {
+		read();
+	}
+	 
+	public synchronized void read() {	
 	    
 	         
 	        try{

@@ -10,10 +10,12 @@ import java.net.*;
 
 
 
-public class ReduceWorker implements Worker, ReduceWorkerImp{
+public class ReduceWorker extends Thread implements Worker, ReduceWorkerImp{
 	private Directions askedDirections, reducedDirections;
 	private static Map<Integer, Directions> mappedDirections=null;
 	private ServerReducerForMaster serverReducerForMaster;
+    private Socket connection = null;
+	private ServerSocket providerSocket = null;
 	public ReduceWorker(Map<Integer, Directions> map, Directions askedDirections){
 		mappedDirections=map;
 		this.askedDirections=askedDirections;
@@ -48,14 +50,29 @@ public class ReduceWorker implements Worker, ReduceWorkerImp{
 	}
 	
 	public void sendResults(Directions dirs) {
-		serverReducerForMaster.writeOutAndClose(dirs);
+		((ServerReducerForMaster)serverReducerForMaster).writeOutAndClose(dirs);
+		try {
+			connection.close();
+			providerSocket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		serverReducerForMaster=null; providerSocket=null; connection=null;
 	}
 
 
 	public void initialize() {
-		openServerForMaster();
-		reducedDirections=reduce(this.mappedDirections);
-		sendResults(reducedDirections);
+		while(true){
+			if(connection!=null){
+				serverReducerForMaster.read();
+			}else{
+				openServerForMaster();
+			}
+    		this.askedDirections=((ServerReducerForMaster)serverReducerForMaster).getAskedDirections();
+            this.mappedDirections=((ServerReducerForMaster)serverReducerForMaster).getMappedDirs();
+			reducedDirections=reduce(this.mappedDirections);
+			sendResults(reducedDirections);
+		}
 	}
 
 
@@ -65,16 +82,14 @@ public class ReduceWorker implements Worker, ReduceWorkerImp{
 	}
 	
 	private void openServerForMaster() {
-		ServerSocket providerSocket = null;
-        Socket connection = null;
          
             try {
-                providerSocket = new ServerSocket (4005);
-                connection = providerSocket.accept();
-                serverReducerForMaster = new ServerReducerForMaster(connection);
+            	if (providerSocket==null) {
+	                providerSocket = new ServerSocket (4005);
+	                connection = providerSocket.accept();
+	                serverReducerForMaster = new ServerReducerForMaster(connection);
+            	}
                 serverReducerForMaster.run();
-        		this.askedDirections=serverReducerForMaster.getAskedDirections();
-                this.mappedDirections=serverReducerForMaster.getMappedDirs();
             } catch (UnknownHostException unknownHost) {
                 System.err.println("You are trying to connect to an unknown host!");
             }catch (IOException ioException) {

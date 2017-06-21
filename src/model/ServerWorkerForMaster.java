@@ -33,9 +33,13 @@ public class ServerWorkerForMaster extends Thread{
 	public void setMappedDirections(Map<Integer, Directions> mappedDirections){
 		this.mappedDirections=mappedDirections;
 	}
-	 
+	
 	@Override
-	public void run() {	
+	public void run() {
+		read();
+	}
+	 
+	public synchronized void read() {	
 	    
 	         
 	        try{
@@ -61,16 +65,28 @@ public class ServerWorkerForMaster extends Thread{
 			this.setMappedDirections(mappedDirections);
 			out.writeObject(this.getMappedDirs());
 			out.flush();
-			readAppend = in.readObject();
-			if(readAppend!=null){
+			readAppend = (Directions) in.readObject();
+			if(((Directions)readAppend).equals(new Directions(0, 0, 0, 0))){
+				hasAPI=false;
+			}else{
 				hasAPI=true;
 			}
-	        in.close();
-	        out.close();
 	    } catch (IOException ioException) {
 	    	ioException.printStackTrace();
 	    }catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		}finally{
+			close();
+		}
+	}
+	
+	private void close() {
+		try{
+			in.close();
+			out.close();
+			this.interrupt();
+		}catch (IOException e) {
+			e.getMessage();
 		}
 	}
 	

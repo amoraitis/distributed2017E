@@ -11,11 +11,11 @@ import java.io.Serializable;
  *
  */
 public class Direction implements Serializable{
-	
-  /**
-	 * 
-	 */
-	private static final long serialVersionUID = -4871766606666947778L;
+
+/**
+   * 
+   */
+  private static final long serialVersionUID = -4871766606666947778L;
 private String distance, duration,polyline_points;
   public String getPolyline_points() {
 	return polyline_points;
