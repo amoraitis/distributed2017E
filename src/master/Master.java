@@ -29,12 +29,12 @@ public class Master extends Thread implements MasterImp{
 			askedDirections = ((ServerMasterforClient) serverMasterforClient).getAskedDirections();
 			ourDirections = searchCache(askedDirections);
 			if(ourDirections==null){
-				MapWorker mapWorker = new MapWorker();
+				/*MapWorker mapWorker = new MapWorker();
 				mappedDirections = mapWorker.map();
 				ReduceWorker reduceWorker=new ReduceWorker(mappedDirections, askedDirections);
-				ourDirections= reduceWorker.reduce(mappedDirections);
-				/*startClientForMapper();
-				startClientforReducer(mappedDirections);*/
+				ourDirections= reduceWorker.reduce(mappedDirections);*/
+				startClientForMapper();
+				startClientforReducer(mappedDirections);
 				goneTOWorker = true;
 			}
 			
